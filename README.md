@@ -66,6 +66,56 @@ compressed = compress_image(img, k=50)
 save_compressed_image(compressed, "output.jpg")
 ```
 
+## 🏗️ Architecture
+
+Shrinkme is built with a clean, modular architecture for easy maintenance and extension:
+
+```mermaid
+graph TB
+    A["👤 User Interface"] --> B["CLI Interface<br/>shrinkme/cli.py"]
+    A --> C["Python API<br/>shrinkme/__init__.py"]
+    
+    B --> D["Core Compression Engine<br/>shrinkme/core.py"]
+    C --> D
+    
+    D --> E["SVD Decomposition<br/>numpy.linalg.svd"]
+    D --> F["Image I/O<br/>PIL.Image"]
+    
+    C --> G["Utility Functions<br/>shrinkme/utils.py"]
+    G --> H["Image Resizing<br/>Pre/Post Processing"]
+    
+    D --> I["Metrics & Stats<br/>Compression Analysis"]
+    D --> J["Visualization<br/>matplotlib"]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff3e0
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+    style E fill:#ffe0b2
+    style F fill:#ffe0b2
+    style G fill:#f3e5f5
+    style H fill:#ffe0b2
+    style I fill:#c8e6c9
+    style J fill:#c8e6c9
+```
+
+### Module Breakdown
+
+| Module | Purpose |
+|--------|---------|
+| **cli.py** | Command-line interface with argparse |
+| **core.py** | SVD compression engine & main logic |
+| **utils.py** | Image resizing & dimension utilities |
+| **__init__.py** | Public API exports |
+
+### Data Flow
+
+1. **Input** → Load image (grayscale matrix)
+2. **Pre-Processing** → Optional resizing
+3. **Compression** → SVD decomposition, keep top k singular values
+4. **Post-Processing** → Optional output resizing
+5. **Output** → Save compressed image & metrics
+
 ## 📚 Usage Examples
 
 ### Basic Compression
