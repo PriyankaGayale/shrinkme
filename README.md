@@ -1,195 +1,280 @@
-# NumPy Image Compression using SVD
+# Shrinkme - SVD-Based Image Compression
 
-This project demonstrates how Singular Value Decomposition (SVD) can compress images using NumPy.
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://badge.fury.io/py/shrinkme.svg)](https://badge.fury.io/py/shrinkme)
+[![Tests](https://github.com/PriyankaGayale/shrinkme/workflows/tests/badge.svg)](https://github.com/PriyankaGayale/shrinkme/actions)
 
-## How it works
+Compress images intelligently using **Singular Value Decomposition (SVD)**, a mathematical technique that reduces file size while maintaining visual quality. Perfect for batch processing, thumbnail generation, or optimizing image storage.
 
-1. Convert image to grayscale matrix
-2. Apply SVD
-3. Keep top k singular values
-4. Reconstruct image
+## 🚀 Features
 
-## Example
+- **SVD-Based Compression**: Uses mathematical decomposition to analyze and compress images
+- **Flexible Resizing**: Resize images before or after compression to fit your needs
+- **Dual Interface**: Use as a Python library or command-line tool
+- **Detailed Metrics**: Get compression ratios, storage savings, and file size statistics
+- **Visual Comparison**: Preview original vs. compressed images side-by-side
+- **Batch Processing**: Easily compress multiple images programmatically
+- **Cross-Platform**: Works on Windows, macOS, and Linux
 
-Original vs Compressed Image
+## 📦 Installation
 
-## Run
+### Via pip (Recommended)
 
-pip install -r requirements.txt
+```bash
+pip install shrinkme
+```
 
-python compress.py
+### From source
 
-3️⃣ Architecture Design
-System Architecture
-User
-  │
-  ▼
-Main Controller
-  │
-  ├── Image Loader
-  │
-  ├── SVD Compression Engine
-  │
-  ├── Compression Metrics Analyzer
-  │
-  └── Visualization Module
-4️⃣ Module Responsibilities
-1. Image Loader
+```bash
+git clone https://github.com/PriyankaGayale/shrinkme.git
+cd shrinkme
+pip install -e .
+```
 
-Function:
+## 🎯 Quick Start
 
-load_image()
+### Command Line
 
-Responsibilities:
+```bash
+# Basic compression
+shrinkme compress --input image.jpg --k 50
 
-read image file
+# Compress with resizing
+shrinkme compress --input image.jpg --k 50 --resize 800x600
 
-convert to grayscale
+# Compress and visualize
+shrinkme compress --input image.jpg --k 50 --visualize
 
-transform to NumPy matrix
+# Save to custom output path
+shrinkme compress --input image.jpg --k 50 --output result.jpg
+```
 
-Example matrix representation:
+### Python Library
 
-[
- [120 122 125 ...]
- [118 119 123 ...]
- ...
-]
+```python
+from shrinkme import load_image, compress_image, save_compressed_image
 
-Each value = pixel intensity (0–255)
+# Load image
+img = load_image("image.jpg")
 
-2. Compression Engine
+# Compress with k=50 singular values
+compressed = compress_image(img, k=50)
 
-Function:
+# Save result
+save_compressed_image(compressed, "output.jpg")
+```
 
-compress_image()
+## 📚 Usage Examples
 
-Core operation:
+### Basic Compression
 
-A = U Σ Vᵀ
+```python
+from shrinkme import load_image, compress_image, save_compressed_image, print_metrics, calculate_compression_metrics
 
-Where:
+img = load_image("sample.jpg")
+compressed = compress_image(img, k=50)
+metrics = calculate_compression_metrics("sample.jpg", img, k=50)
+print_metrics(metrics, k=50)
+save_compressed_image(compressed, "compressed.jpg")
+```
 
-A  = original image matrix
-U  = left singular vectors
-Σ  = singular values
-Vᵀ = right singular vectors
+### Compression with Resizing
 
-Instead of storing full matrix:
+```python
+from shrinkme import resize_image, compress_image, resize_output, save_compressed_image
 
-A ≈ U_k Σ_k V_kᵀ
+# Resize before compression
+img = resize_image("sample.jpg", width=800, height=600)
+compressed = compress_image(img, k=40)
+save_compressed_image(compressed, "result.jpg")
 
-We keep only top k singular values.
+# Or resize after compression
+img = load_image("sample.jpg")
+compressed = compress_image(img, k=50)
+resized = resize_output(compressed, width=1024, height=768)
+save_compressed_image(resized, "result.jpg")
+```
 
-5️⃣ Deep Mathematical Explanation
+### Batch Processing
 
-For an image matrix:
+```python
+from pathlib import Path
+from shrinkme import load_image, compress_image, save_compressed_image
 
-A ∈ R^(m × n)
+image_dir = Path("images/")
+for img_path in image_dir.glob("*.jpg"):
+    img = load_image(str(img_path))
+    compressed = compress_image(img, k=50)
+    output_path = f"compressed/{img_path.name}"
+    save_compressed_image(compressed, output_path)
+    print(f"✓ Processed {img_path.name}")
+```
 
-SVD decomposes it into:
+### Finding Optimal K Value
 
-A = U Σ Vᵀ
+```python
+from shrinkme import load_image, compress_image, calculate_compression_metrics
 
-Where:
+img = load_image("image.jpg")
 
-U = m × m
-Σ = m × n
-Vᵀ = n × n
+for k in [20, 40, 60, 80, 100]:
+    compressed = compress_image(img, k)
+    metrics = calculate_compression_metrics("image.jpg", img, k)
+    ratio = metrics["compression_ratio"]
+    saved = metrics["space_saved"] * 100
+    print(f"k={k}: {ratio:.2f}x compression, {saved:.1f}% space saved")
+```
 
-But we only keep:
+## 🔧 API Reference
 
-U_k = m × k
-Σ_k = k × k
-V_kᵀ = k × n
+See [docs/API.md](docs/API.md) for complete function documentation.
 
-Reconstruction:
+### Core Functions
 
-A_k = U_k Σ_k V_kᵀ
-6️⃣ Why Compression Works
+- `load_image(path)` - Load image and convert to grayscale matrix
+- `compress_image(img_matrix, k)` - Compress using SVD with k singular values
+- `calculate_compression_metrics(path, img_matrix, k)` - Get compression statistics
+- `save_compressed_image(matrix, output_path)` - Save compressed image to file
+- `show_images(original, compressed)` - Display before/after comparison
 
-Natural images contain redundant information.
+### Utility Functions
 
-Example:
+- `resize_image(path, width, height)` - Resize image before compression
+- `resize_output(matrix, width, height)` - Resize after compression
+- `parse_dimension_string(dim_str)` - Parse "WIDTHxHEIGHT" format
+- `preserve_aspect_ratio(...)` - Calculate dimensions preserving aspect ratio
 
-Large areas like sky, walls, skin tones have similar pixel values.
+## 📖 How It Works
 
-This means the matrix has low effective rank.
+### Mathematical Background
 
-Thus:
+Shrinkme uses **Singular Value Decomposition (SVD)** to compress images:
 
-Top singular values capture most information
+1. **Convert image to matrix**: Each pixel is a value (0-255)
+2. **Decompose matrix**: A = U × Σ × V^T
+3. **Keep top k singular values**: Only use most significant components
+4. **Reconstruct image**: A_k ≈ U_k × Σ_k × V_k^T
 
-Small singular values represent noise or minor details.
+**Storage Savings:**
+- Original: `m × n` values
+- Compressed: `k(m + n + 1)` values
 
-7️⃣ Storage Analysis
+**Example**: A 512×512 image with k=50:
+- Original: 262,144 values
+- Compressed: 51,250 values
+- **Compression ratio: 5.1x**
+- **Space saved: 80.4%**
 
-Original storage:
+### Why SVD for Images?
 
-m × n
+Natural images contain redundant information (similar colors in large areas). SVD exploits this by keeping only the most important information (highest singular values) and discarding the rest.
 
-Compressed storage:
+## 🎮 CLI Commands
 
-k(m + n + 1)
+```bash
+shrinkme compress --help
+```
 
-Example:
+**Options:**
+- `--input, -i` (required): Path to input image
+- `--k, -k` (required): Number of singular values to keep
+- `--output, -o`: Save path (default: compressed_output.jpg)
+- `--resize, -r`: Resize input to WIDTHxHEIGHT before compression
+- `--resize-output`: Resize output to WIDTHxHEIGHT after compression
+- `--visualize, -v`: Show before/after comparison
+- `--metrics, -m`: Display compression statistics (default: true)
 
-Image: 512 × 512
-Original = 262144 values
+## 📋 Requirements
 
-If:
+- Python 3.8 or higher
+- numpy >= 1.21.0
+- Pillow >= 8.0.0
+- matplotlib >= 3.3.0 (for visualization)
 
-k = 40
+## 🧪 Testing
 
-Compressed storage:
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
 
-40(512 + 512 + 1)
-≈ 40920
+# Run tests
+pytest
 
-Compression ratio:
+# Run with coverage
+pytest --cov=shrinkme
+```
 
-262144 / 40920 ≈ 6.4x
-8️⃣ Computational Complexity
+## 🚧 Development
 
-SVD complexity:
+### Setup Development Environment
 
-O(mn²)
+```bash
+git clone https://github.com/PriyankaGayale/shrinkme.git
+cd shrinkme
+pip install -e ".[dev]"
+```
 
-For large images:
+### Code Style
 
-~ millions of operations
+```bash
+# Format code
+black shrinkme/
 
-NumPy uses optimized LAPACK routines, making it very fast.
+# Check style
+flake8 shrinkme/
 
-9️⃣ Real World Applications
+# Sort imports
+isort shrinkme/
+```
 
-SVD compression is used in:
+### Building Distribution Package
 
-Image processing
+```bash
+pip install build twine
 
-photo compression
+# Build
+python -m build
 
-noise reduction
+# Test upload
+twine upload --repository testpypi dist/*
 
-Recommender systems
+# Upload to PyPI
+twine upload dist/*
+```
 
-Netflix recommendation algorithm
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
 
-Natural language processing
+## 📄 License
 
-Latent Semantic Analysis
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
 
-Signal processing
+## 🙏 Acknowledgments
 
-audio compression
+- Built with [NumPy](https://numpy.org/) for efficient matrix operations
+- Image processing with [Pillow](https://python-pillow.org/)
+- Visualization using [Matplotlib](https://matplotlib.org/)
 
-🔟 Limitations
+## 📞 Support & Feedback
 
-SVD compression has tradeoffs:
+- **Issues**: [GitHub Issues](https://github.com/PriyankaGayale/shrinkme/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/PriyankaGayale/shrinkme/discussions)
+- **Security**: See [SECURITY.md](SECURITY.md) for vulnerability reporting
 
-Advantage	Limitation
-mathematically elegant	computationally expensive
-good theoretical compression	not optimal for storage
-preserves structure	slower than JPEG
+## 💡 Tips & Tricks
 
-That's why JPEG uses DCT instead of SVD.
+### Choosing the Right K Value
+
+| K Value | Use Case |
+|---------|----------|
+| 10-20 | Aggressive compression, thumbnails |
+| 30-50 | Balanced quality/compression |
+| 60-100 | High quality, web images |
+| 100+ | Minimal compression, archival |
+
+### Performance Tips
+
+1. **Resize first**: Smaller images compress faster
+2. **Batch process**: Use loops for efficiency
+3. **Experiment**: Test different k values to find sweet spot
